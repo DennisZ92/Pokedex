@@ -643,7 +643,7 @@
     },
     {
         "name": "Schlurp",
-        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/108.png",
+        "image": "./assets/images/108.png",
         "sound": "./assets/cries/108.ogg",
         "description": "Schlurp - Typ: Normal - Schlurp hat eine lange Zunge und kann damit angreifen. Es liebt es, in der Natur zu sein und sich zu verstecken. Schlurp ist sehr flink und kann sich gut verteidigen."
     },
