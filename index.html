@@ -43,10 +43,14 @@
 
                 window.speechSynthesis.speak(speech);
             }, 500);
+
+            return speech;
         }
 
         // Stimmen müssen manchmal erst geladen werden
         window.speechSynthesis.onvoiceschanged = () => speakText('');
+
+        let currentSpeech = null;
 
         // Pokémon-Daten laden und verarbeiten
         fetch('./assets/data/pokemonData.json')
@@ -72,6 +76,11 @@
                         // Verhindert das Standardverhalten des Links (Seitenwechsel)
                         event.preventDefault();
                         
+                        // Stop the current speech synthesis if any
+                        if (currentSpeech) {
+                            window.speechSynthesis.cancel();
+                        }
+                        
                         // Holen des Pokémon-Namens aus dem "data-pokemon"-Attribut
                         const pokemonName = event.currentTarget.getAttribute('data-pokemon');
                         
@@ -88,7 +97,7 @@
 
                         // Vorlesen der Pokémon-Beschreibung nach 2 Sekunden
                         setTimeout(() => {
-                            speakText(pokemon.description);
+                            currentSpeech = speakText(pokemon.description);
                         }, 2000);
                     });
                 });
@@ -121,15 +130,15 @@
 
                         // Vorlesen der Pokémon-Beschreibung nach 2 Sekunden
                         setTimeout(() => {
-                            speakText(pokemon.description);
+                            currentSpeech = speakText(pokemon.description);
                         }, 2000);
                     } else {
-                        speakText('Pokémon nicht gefunden. Bitte versuchen Sie es erneut.');
+                        speakText('Pokémon nicht gefunden.');
                     }
                 });
 
                 recognition.addEventListener('error', (event) => {
-                    speakText('Fehler bei der Spracherkennung. Bitte versuchen Sie es erneut.');
+                    speakText('Fehler bei der Spracherkennung.');
                 });
             })
             .catch(error => console.error('Fehler beim Laden der Pokémon-Daten:', error));
