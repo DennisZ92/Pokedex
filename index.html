@@ -1,147 +1,279 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokedex</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="background">
-        <img src="./assets/images/5818333.webp" alt="Pokedex Hintergrund" class="background">
+        <img src="assets/images/5818333.webp" alt="Pokedex Hintergrund" class="background">
     </div>
     <div class="logo">
-        <img src="./assets/images/logo.png" alt="Pokedex Logo">
+        <img src="assets/images/logo.png" alt="Pokedex Logo">
     </div>
-    <button class="microphone" id="microphone-button">
-        <img src="./assets/images/microphone.png" alt="Mikrofon">
+    <button id="microphone-button" class="microphone">
+        <img src="assets/images/microphone.png" alt="Mikrofon">
     </button>
-    <div class="sidebar" id="sidebar">
-        <!-- Links werden dynamisch hinzugefügt -->
-    </div>
-
+    <div class="sidebar" id="sidebar"></div>
     <div id="pokemon-detail">
         <img id="pokemon-image" src="" alt="Pokémon Bild">
         <p id="pokemon-description"></p>
     </div>
 
     <script>
-        // Funktion zum Vorlesen des Textes mit natürlicherer Stimme
-        function speakText(text) {
-            const speech = new SpeechSynthesisUtterance(text);
-            speech.lang = 'de-DE'; // Sprache auf Deutsch setzen
+        const pokemonData = {}; // Leeres Objekt für lokale Sounds
 
-            // Wartezeit, um sicherzustellen, dass Stimmen geladen sind
-            setTimeout(() => {
-                const voices = window.speechSynthesis.getVoices();
-                const preferredVoice = voices.find(voice => voice.lang === 'de-DE' && voice.name.includes('Microsoft')) || 
-                                       voices.find(voice => voice.lang === 'de-DE' && voice.name.includes('Google'));
+        // Individuelle Beschreibungen für Pokémon 899 bis 1025
+        const customDescriptions = {
+            899: 'Damythir ist die majestätische Entwicklung von Damhirplex, bekannt für seine beeindruckenden Geweihe und seine enge Verbindung zur Natur.',
+            900: 'Axantor, die Weiterentwicklung von Sichlor, besitzt mächtige steinerne Klingen und eine robuste Erscheinung.',
+            901: 'Ursaluna, die finale Form von Teddiursa, zeichnet sich durch ihre massige Statur und ihre Fähigkeit aus, verborgene Schätze aufzuspüren.',
+            902: 'Salmagnis, die Entwicklung von Barschuft, ist für ihre beeindruckende Ausdauer und ihre Fähigkeit bekannt, lange Strecken zu schwimmen.',
+            903: 'Snieboss, die Weiterentwicklung von Sneibunna, ist für ihre listige Natur und ihre Fähigkeit bekannt, sich lautlos zu bewegen.',
+            904: 'Myriador, die Entwicklung von Baldorfish, beeindruckt mit ihren kräftigen Stacheln und ihrer Fähigkeit, toxische Substanzen zu produzieren.',
+            905: 'Cupidos, ein mysteriöses Pokémon, das für seine Fähigkeit bekannt ist, das Wetter zu beeinflussen und zwischen verschiedenen Formen zu wechseln.',
+            906: 'Felori, ein neugieriges Katzen-Pokémon, das für seine verspielte Natur und seine Vorliebe für sonnige Plätze bekannt ist.',
+            907: 'Feliospa, die Entwicklung von Felori, zeigt eine anmutige Haltung und beeindruckende Beweglichkeit.',
+            908: 'Maskagato, die finale Form von Felori, beeindruckt mit ihrer eleganten Erscheinung und ihrer meisterhaften Jagdfähigkeit.',
+            909: 'Krokel, ein lebhaftes Krokodil-Pokémon, das für seine Energie und seinen Enthusiasmus bekannt ist.',
+            910: 'Lokroko, die Entwicklung von Krokel, zeigt eine robuste Statur und eine Vorliebe für warme Umgebungen.',
+            911: 'Skelokrok, die finale Form von Krokel, beeindruckt mit ihrer imposanten Erscheinung und ihrer Fähigkeit, intensive Hitze zu erzeugen.',
+            912: 'Kwaks, ein fröhliches Enten-Pokémon, das für seine Liebe zum Tanzen und seine lebhafte Persönlichkeit bekannt ist.',
+            913: 'Fuentente, die Entwicklung von Kwaks, zeigt elegante Tanzbewegungen und eine anmutige Erscheinung.',
+            914: 'Bailonda, die finale Form von Kwaks, beeindruckt mit ihren meisterhaften Tanzfähigkeiten und ihrer charismatischen Ausstrahlung.',
+            915: 'Ferkuli, ein kleines Schwein-Pokémon, das für seine neugierige Natur und seine Vorliebe für das Graben bekannt ist.',
+            916: 'Fragrunz, die Entwicklung von Ferkuli, zeigt eine robuste Statur und eine beeindruckende Ausdauer.',
+            917: 'Tarundel, ein kleines, spinnenartiges Pokémon, das für seine widerstandsfähige Natur und seine Fähigkeit bekannt ist, selbst aus schweren Verletzungen zu regenerieren.',
+            918: 'Spinsidias, die Weiterentwicklung von Tarundel, beeindruckt mit ihrer außergewöhnlichen Stärke und ihrer Fähigkeit, mit präzisen Fäden Fallen zu stellen.',
+            919: 'Micrick, ein cleveres Pokémon, das sich durch seine Fähigkeit auszeichnet, Stimmen zu imitieren und Gegner zu täuschen.',
+            920: 'Lextremo, die Entwicklung von Micrick, nutzt seinen scharfen Verstand und seine blitzschnellen Reflexe, um in Kämpfen stets die Oberhand zu gewinnen.',
+            921: 'Pamo, ein lebhaftes, elektrisches Pokémon, das für seine treue und energiegeladene Natur bekannt ist.',
+            922: 'Pamamo, die Entwicklung von Pamo, beeindruckt mit erhöhter Ausdauer und der Fähigkeit, Elektrizität effizient zu speichern.',
+            923: 'Pamomamo, die finale Form von Pamo, ist ein geschickter Kämpfer mit beeindruckender elektrischer Kraft und einer engen Bindung zu seinem Trainer.',
+            924: 'Zwieps, ein verspieltes Vogel-Pokémon, das für sein einzigartiges Federkleid und seine melodischen Rufe bekannt ist.',
+            925: 'Famieps, die Entwicklung von Zwieps, lebt in Gruppen und zeigt ein starkes Gemeinschaftsgefühl sowie eine ausgeprägte Teamarbeit.',
+            926: 'Hefel, ein kleines Pokémon mit einem weichen, brotähnlichen Körper, das für seinen süßen Duft und seine knusprige Oberfläche bekannt ist.',
+            927: 'Backel, die Entwicklung von Hefel, besitzt eine feste, knusprige Kruste und nutzt seinen Körper, um sich gegen Angreifer zu verteidigen.',
+            928: 'Olini, ein winziges Pflanzen-Pokémon, das in sonnigen Gebieten gedeiht und einen leichten Olivenduft verströmt.',
+            929: 'Olivinio, die Entwicklung von Olini, zeichnet sich durch seine robuste Natur und seine Fähigkeit aus, wertvolles Öl zu produzieren.',
+            930: 'Olithena, die finale Form von Olini, beeindruckt mit ihrer königlichen Haltung und ihrer Fähigkeit, hochenergetisches Öl zu erzeugen.',
+            931: 'Krawalloro, ein lautes und temperamentvolles Papageien-Pokémon, das durch seine rebellische Art auffällt.',
+            932: 'Geosali, ein kleines, steinartiges Pokémon, das an trockene Umgebungen angepasst ist und mineralische Energie speichert.',
+            933: 'Sedisal, die Entwicklung von Geosali, kann große Salzkristalle auf seinem Rücken wachsen lassen und sie zur Verteidigung einsetzen.',
+            934: 'Saltigant, die finale Form von Geosali, ist ein imposantes Pokémon mit einer soliden Salzpanzerung und außergewöhnlicher Widerstandsfähigkeit.',
+            935: 'Knarbon, ein robustes Kohle-Pokémon, das in dunklen Höhlen lebt und eine enorme Hitze erzeugen kann.',
+            936: 'Crimanzo, ein feuriges Pokémon, das seine psychische Energie nutzt, um mächtige Flammen zu entfachen.',
+            937: 'Azugladis, die alternative Entwicklung von Knarbon, trägt eine eiserne Rüstung und nutzt psychische Kräfte für seine Verteidigung.',
+            938: 'Blipp, ein kleines Frosch-Pokémon, das durch seine leuchtenden Hautstellen auf sich aufmerksam macht.',
+            939: 'Wampitz, die Entwicklung von Blipp, nutzt elektrische Impulse, um Feinde abzuschrecken und sich blitzschnell zu bewegen.',
+            940: 'Voltrel, ein energiegeladenes Vogel-Pokémon, das seine Federn auflädt, um sich mit Hochgeschwindigkeit zu bewegen.',
+            941: 'Voltrean, die Entwicklung von Voltrel, erzeugt gewaltige elektrische Ladungen und nutzt sie, um in der Luft zu manövrieren.',
+            942: 'Mobtiff, ein düsteres Pokémon, das in der Dunkelheit lauert und mit seinem listigen Wesen seine Beute überrascht.',
+            943: 'Mastifioso, die Entwicklung von Mobtiff, ist für seine Führungsqualitäten und sein furchteinflößendes Auftreten bekannt.',
+            944: 'Sproxi, ein kleines, neugieriges Pokémon, das in Wäldern lebt und mit seinen leuchtenden Farben Feinde abschreckt.',
+            945: 'Affiti, ein gewandtes Affen-Pokémon, das seine Umgebung mit farbigen Sekreten markiert und so Reviergrenzen festlegt.',
+            946: 'Weherba, ein melancholisches Pflanzen-Pokémon, das durch seinen anhaltenden Nebel eine düstere Atmosphäre erzeugt.',
+            947: 'Horrerba, die Entwicklung von Weherba, nutzt seinen giftigen Nebel, um Gegner in Angst und Schrecken zu versetzen.',
+            948: 'Tentagra, ein mysteriöses Pokémon mit Tentakeln, das sich lautlos durch seine Umgebung bewegt.',
+            949: 'Tenterra, die Entwicklung von Tentagra, besitzt eine steinerne Hülle, die es vor Angriffen schützt und seine Kraft verstärkt.',
+            950: 'Klibbe, ein robustes Pokémon mit einem klebrigen Körper, das an Wänden entlangkriechen kann.',
+            951: 'Chilingel, ein Pflanzen- und Geister-Pokémon, das sich mit einer beruhigenden Melodie vor Feinden schützt.',
+            952: 'Halupenjo, ein feuriges Pokémon mit einer scharfen Pfefferschote, die es in Kämpfen geschickt einsetzt.',
+            953: 'Relluk, ein geheimnisvolles Pokémon mit einer uralten, steinernen Maske.',
+            954: 'Skarabaks, die Entwicklung von Relluk, besitzt eine heilige Verbindung zu alten Ruinen und schützt wertvolle Schätze.',
+            955: 'Flattutu, ein Eulen-Pokémon mit hypnotischen Augen, das seine Gegner mit präzisen Bewegungen verwirrt.',
+            956: 'Psiopatra, die Entwicklung von Flattutu, beeindruckt mit telekinetischen Fähigkeiten und einem königlichen Auftreten.',
+            957: 'Forgita, ein Pokémon mit einer schützenden Schale, das sich langsam, aber sicher fortbewegt.',
+            958: 'Tafforgita, die Entwicklung von Forgita, zeichnet sich durch eine härtere Schale und eine erhöhte Verteidigungsfähigkeit aus.',
+            959: 'Granforgita, die finale Form von Forgita, besitzt eine unerschütterliche Panzerung und überragende Ausdauer.',
+            960: 'Schligda, ein schlangenartiges Pokémon, das in feuchten Gebieten lebt und blitzschnelle Angriffe ausführt.',
+            961: 'Schligdri, die Entwicklung von Schligda, bewegt sich mit unglaublicher Geschwindigkeit und nutzt seinen Körper als Waffe.',
+            962: 'Adebom, ein kräftiges Pokémon mit ausladenden Armen, das mit einem einzigen Schlag Felsen zerschmettern kann.',
+            963: 'Normifin, ein sanftmütiges Wasser-Pokémon, das für seine ruhige Natur und seine Bindung zu anderen Pokémon bekannt ist.',
+            964: 'Delfinator, die Entwicklung von Normifin, beeindruckt mit seiner eleganten Schwimmtechnik und seiner Fähigkeit, Ultraschallwellen zu nutzen.',
+            965: 'Knattox, ein winziges Käfer-Pokémon, das sich durch Tarnung und geschickte Bewegungen verteidigt.',
+            966: 'Knattatox, die Entwicklung von Knattox, entwickelt stärkere Schuppen, um sich besser vor Feinden zu schützen.',
+            967: 'Mopex, ein mysteriöses Pokémon, das in dunklen Höhlen lauert und auf seine Beute wartet.',
+            968: 'Schlurm, ein schleimiges Pokémon, das sich durch enge Spalten zwängen kann und eine klebrige Substanz absondert.',
+            969: 'Lumispross, ein leuchtendes Pflanzen-Pokémon, das seine Umgebung mit einem sanften Licht erhellt.',
+            970: 'Lumiflora, die Entwicklung von Lumispross, beeindruckt mit ihrer Blütenpracht und ihrer Fähigkeit, heilsame Düfte zu verbreiten.',
+            971: 'Gruff, ein robustes Berg-Pokémon, das für seine enorme Kraft und seinen widerstandsfähigen Körper bekannt ist.',
+            972: 'Friedwuff, die Entwicklung von Gruff, ist ein imposantes Pokémon mit einer ausgeprägten Verteidigungskraft und der Fähigkeit, Erdbeben zu erzeugen.',
+            973: 'Flaminkno, ein feuriges Pokémon mit einer Flamme auf seinem Kopf, das für seine mutige Natur und seine hohe Hitzeausstrahlung bekannt ist.',
+            974: 'Flaniwal, die Entwicklung von Flaminkno, hat sich zu einem stärkeren, feurigen Pokémon entwickelt, das durch die Luft fliegen kann.',
+            975: 'Kolowal, die finale Form von Flaminkno, entfacht riesige Feuergeschosse und nutzt Feuerstürme, um seine Feinde zu besiegen.',
+            976: 'Agiluza, ein flexibles und elegantes Pokémon, das sich durch seine außergewöhnliche Beweglichkeit und Geschwindigkeit auszeichnet.',
+            977: 'Heerashai, die Weiterentwicklung von Agiluza, ist ein äußerst schnelles Pokémon, das blitzschnell durch die Luft wirbelt.',
+            978: 'Nigiragi, ein Wasser- und Ungeheuer-Pokémon, das mit seinen langen Tentakeln und seiner dunklen Erscheinung Angst einflößt.',
+            979: 'Epitaff, die Entwicklung von Nigiragi, hat eine riesige, gespenstische Gestalt und ist bekannt für seine Kontrolle über das Wasser.',
+            980: 'Suelord, ein imposantes Wasser-Pokémon, das tief in den Ozeanen lebt und die Macht besitzt, gigantische Wellen zu erzeugen.',
+            981: 'Farigiraf, ein einzigartiges Pokémon mit einer Mischung aus verschiedenen Tierarten, bekannt für seine mystischen Fähigkeiten und seine scharfsinnige Wahrnehmung.',
+            982: 'Dummimisel, ein schelmisches Pokémon, das für seine witzigen Tricks und seine Fähigkeit, alles um sich herum zu durcheinanderzubringen, berüchtigt ist.',
+            983: 'Gladimperio, ein königliches Pokémon, das durch seine majestätische Erscheinung und sein Führungsvermögen in Kämpfen beeindruckt.',
+            984: 'Riesenzahn, ein mächtiges Pokémon mit riesigen Zähnen, das die Fähigkeit besitzt, seine Gegner mit einem einzigen Bissen zu überwältigen.',
+            985: 'Brüllschweif, ein wildes Pokémon, dessen Schwanz einen ohrenbetäubenden Schrei von sich gibt, um Feinde zu vertreiben.',
+            986: 'Wutpilz, ein giftiges Pilz-Pokémon, das durch seine Wutattacken und seine giftigen Sporen gefährlich wird.',
+            987: 'Flatterhaar, ein fliegendes Pokémon mit langen, federartigen Haaren, das in der Luft wirbelnde Stürme erzeugen kann.',
+            988: 'Kriechflügel, ein Pokémon, das sowohl auf dem Boden kriecht als auch die Fähigkeit besitzt, mit seinen Flügeln weite Distanzen zu fliegen.',
+            989: 'Sandfell, ein Erd-Pokémon, das sich in Sanddünen verstecken kann und durch seine ausgeklügelten Tarntechniken bekannt ist.',
+            990: 'Eisenrad, ein metallisches Pokémon mit einer robusten Stahlstruktur, das in Kämpfen massive Angriffe ausführt.',
+            991: 'Eisenbündel, die Entwicklung von Eisenrad, hat eine noch härtere Struktur und kann verschiedene Metalle verschmelzen lassen.',
+            992: 'Eisenhand, ein massiges Pokémon, dessen Hände so stark sind, dass es mit bloßen Fäusten Berge zertrümmern kann.',
+            993: 'Eisenhals, ein Pokémon mit einem stählernen Hals, das seine Gegner mit einem mächtigen Nackenangriff überrascht.',
+            994: 'Eisenfalter, ein mysteriöses Pokémon, dessen metallische Flügel in verschiedenen Farben schillern und extreme Hitze erzeugen.',
+            995: 'Eisendorn, ein stacheliges Pokémon, das mit seinen scharfen Dornen Gegner aus der Entfernung angreifen kann.',
+            996: 'Frospino, ein Wasser- und Eis-Pokémon, das in kalten Regionen lebt und mit seinen Schneekanonen Blitzangriffe ausführen kann.',
+            997: 'Cryospino, die Entwicklung von Frospino, nutzt seine Fähigkeit, Eisblöcke zu erschaffen, um Gegner zu umzingeln und einzufrieren.',
+            998: 'Espinodon, ein mächtiges Dinosaurier-Pokémon, das die Kontrolle über die Umgebung durch seine Erd- und Eiskräfte übernimmt.',
+            999: 'Gierspenst, ein geisterhaftes Pokémon, das mit seinem rätselhaften Wesen und seiner Fähigkeit, Energie zu absorbieren, Feinde erschöpfen kann.',
+            1000: 'Monetigo, ein mystisches Pokémon, das in der Lage ist, Kunstwerke zum Leben zu erwecken und sie für seinen Kampf zu nutzen.',
+            1001: 'Chongjian, ein entschlossener Kämpfer-Pokémon, das durch seine starke Körperhaltung und ausgeprägte Muskelkraft beeindruckt.',
+            1002: 'Baojian, ein kleiner, agiler Kämpfer, der mit seinem schnellen Angriffstempo seine Gegner überwältigt.',
+            1003: 'Dinglu, ein robustes Erd-Pokémon, das in der Lage ist, sich in die Erde zu graben und Feinde von unten zu überraschen.',
+            1004: 'Yuyu, ein elegantes Vogel-Pokémon, das durch seine Anmut und seinen geschmeidigen Flug stilisiert ist.',
+            1005: 'Donnersichel, ein elektrisch aufgeladenes Pokémon, dessen Angriffe blitzschnell sind und auf einer massiven Energiemenge basieren.',
+            1006: 'Eisenkrieger, ein legendäres Pokémon, dessen stählerne Rüstung unbesiegbar erscheint und das für seine Kriegsführung berüchtigt ist.',
+            1007: 'Koraidon, ein majestätisches Pokémon, das in der Lage ist, Zeit und Raum zu manipulieren und in der antiken Geschichte verehrt wird.',
+            1008: 'Miraidon, die andere Hälfte von Koraidon, beherrscht das Spiegeluniversum und wird für seine mystische Kraft gefeiert.',
+            1009: 'Windewoge, ein leichtfüßiges, fliegendes Pokémon, das die Luftströme beherrscht und mit Windattacken überragende Präzision erzielt.',
+            1010: 'Eisenblatt, ein Pokémon, das mit seinen scharfen, metallischen Blättern als Waffe dient und die Kraft von Stahl und Natur vereint.',
+            1011: 'Sirapfel, ein einzigartiges Apfel-Pokémon, das durch seine süße Ausstrahlung Gegner in die Irre führt.',
+            1012: 'Mortcha, ein düsteres Geist-Pokémon, das durch seine unheimliche Aura die Umgebung verfinstert und Furcht verbreitet.',
+            1013: 'Fatalitcha, die Weiterentwicklung von Mortcha, besitzt die Fähigkeit, Katastrophen zu verursachen und die Zeit zu beeinflussen.',
+            1014: 'Boninu, ein Gesteins-Pokémon, das in eisigen Gebirgen lebt und Steine als Waffe verwendet, um Feinde abzuwehren.',
+            1015: 'Benesaru, ein fröhliches Pokémon mit einer ausgezeichneten Bindung zu seinen Mit-Pokémon, das stets die gute Laune verbreitet.',
+            1016: 'Beatori, ein mystisches Pokémon, das von tiefen Geheimnissen umgeben ist und seine Kräfte durch Rituale verstärkt.',
+            1017: 'Ogerpon, ein riesiges, wildes Pokémon, das mit seiner beeindruckenden Körpergröße und seiner furchteinflößenden Stärke in Legenden verewigt wurde.',
+            1018: 'Briduradon, ein mystisches Drachen-Pokémon, das die Elemente beherrscht und als Hüter der Zeit und des Raumes angesehen wird.',
+            1019: 'Hydrapfel, ein geheimnisvolles Wasser-Pokémon, das die Fähigkeit besitzt, Wasser und Gestein zu verschmelzen.',
+            1020: 'Keilflamme, ein scharfkantiges Pokémon, das sich wie eine lebendige Flamme durch die Luft schneidet und für seine Geschwindigkeit berüchtigt ist.',
+            1021: 'Furienblitz, ein elektrisch geladener Pokémon-Wolf, dessen wilde Natur von blitzartigen Angriffen begleitet wird.',
+            1022: 'Eisenfels, ein Pokémon aus massivem Stahl, das gegen jede Art von Angriff standhält und als nahezu unzerstörbar gilt.',
+            1023: 'Eisenhaupt, ein gewaltiges Pokémon mit einem riesigen, stählernen Kopf, der selbst die härtesten Angriffe abwehren kann.',
+            1024: 'Terapagos, ein legendäres Pokémon, das die Fähigkeit besitzt, das Schicksal der Welt zu beeinflussen und in vielen alten Mythen verewigt wurde.',
+            1025: 'Infamomo, ein äußerst mächtiges Pokémon, dessen Ursprung und Fähigkeiten in den alten Legenden verborgen sind und von vielen als bösartig betrachtet werden.'    
+        };
 
-                if (preferredVoice) {
-                    speech.voice = preferredVoice;
-                }
+        // Funktion zum Abrufen der Pokémon-Daten von der PokeAPI
+        async function fetchPokemonData(id) {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+            const pokemon = await response.json();
+            const speciesResponse = await fetch(pokemon.species.url);
+            const species = await speciesResponse.json();
+            const flavorTextEntry = species.flavor_text_entries.find(entry => entry.language.name === 'de');
+            const germanNameEntry = species.names.find(entry => entry.language.name === 'de');
 
-                window.speechSynthesis.speak(speech);
-            }, 500);
+            const types = await Promise.all(pokemon.types.map(async typeInfo => {
+                const typeResponse = await fetch(typeInfo.type.url);
+                const typeData = await typeResponse.json();
+                const germanTypeEntry = typeData.names.find(entry => entry.language.name === 'de');
+                return germanTypeEntry.name;
+            }));
 
-            return speech;
+            // Verwenden Sie die individuelle Beschreibung, wenn keine deutsche Beschreibung verfügbar ist
+            const customDescription = customDescriptions[id] || 'Keine Beschreibung verfügbar';
+
+            return {
+                name: germanNameEntry ? germanNameEntry.name : pokemon.name,
+                types: types,
+                flavor_text: flavorTextEntry ? flavorTextEntry.flavor_text : customDescription,
+                image: pokemon.sprites.front_default,
+                sound: `./assets/cries/${id}.ogg`
+            };
         }
 
-        // Stimmen müssen manchmal erst geladen werden
-        window.speechSynthesis.onvoiceschanged = () => speakText('');
-
-        let currentSpeech = null;
-
-        // Pokémon-Daten laden und verarbeiten
-        fetch('./assets/data/pokemonData.json')
-            .then(response => response.json())
-            .then(data => {
-                const sidebar = document.getElementById('sidebar');
-                const pokemonData = {};
-
-                data.forEach(pokemon => {
+        // Funktion zum Initialisieren der Sidebar in Chargen
+        async function initializeSidebar(batchSize = 50) {
+            const sidebar = document.getElementById('sidebar');
+            for (let i = 1; i <= 1025; i += batchSize) {
+                const batchPromises = [];
+                for (let j = i; j < i + batchSize && j <= 1025; j++) {
+                    batchPromises.push(fetchPokemonData(j));
+                }
+                const batchData = await Promise.all(batchPromises);
+                batchData.forEach(pokemon => {
                     pokemonData[pokemon.name] = pokemon;
 
                     const link = document.createElement('a');
-                    link.href = '#';
-                    link.className = 'pokemon-link';
-                    link.dataset.pokemon = pokemon.name;
-                    link.innerHTML = `<img src="${pokemon.image}" alt="">`;
+                    link.href = "#";
+                    link.setAttribute('data-pokemon', pokemon.name);
+                    link.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        displayPokemonDetails(pokemon.name);
+                    });
+
+                    const img = document.createElement('img');
+                    img.src = pokemon.image;
+                    img.alt = pokemon.name;
+
+                    link.appendChild(img);
                     sidebar.appendChild(link);
                 });
+            }
+        }
 
-                // Event-Listener für die Sidebar-Links
-                document.querySelectorAll('.pokemon-link').forEach(link => {
-                    link.addEventListener('click', function(event) {
-                        // Verhindert das Standardverhalten des Links (Seitenwechsel)
-                        event.preventDefault();
-                        
-                        // Stop the current speech synthesis if any
-                        if (currentSpeech) {
-                            window.speechSynthesis.cancel();
-                        }
-                        
-                        // Holen des Pokémon-Namens aus dem "data-pokemon"-Attribut
-                        const pokemonName = event.currentTarget.getAttribute('data-pokemon');
-                        
-                        // Holen der Bild-URL und Beschreibung aus dem pokemonData-Objekt
-                        const pokemon = pokemonData[pokemonName];
+        // Funktion zum Anzeigen der Pokémon-Details
+        function displayPokemonDetails(name) {
+            const pokemon = pokemonData[name];
 
-                        // Setzen des Bildes und der Beschreibung im Detailbereich
-                        document.getElementById('pokemon-image').src = pokemon.image;
-                        document.getElementById('pokemon-description').textContent = pokemon.description;
+            document.getElementById('pokemon-image').src = pokemon.image;
+            document.getElementById('pokemon-description').textContent = `${pokemon.name} - Typ: ${pokemon.types.join('/')}`;
 
-                        // Abspielen des Pokémon-Sounds
-                        const audio = new Audio(pokemon.sound);
-                        audio.play();
+            const audio = new Audio(pokemon.sound);
+            audio.play();
 
-                        // Vorlesen der Pokémon-Beschreibung nach 2 Sekunden
-                        setTimeout(() => {
-                            currentSpeech = speakText(pokemon.description);
-                        }, 2000);
-                    });
-                });
+            setTimeout(() => {
+                speakText(`${pokemon.name} - Typ: ${pokemon.types.join('/')}`, pokemon.flavor_text);
+            }, 2000);
+        }
 
-                // Sprachsuche-Funktionalität
-                const microphoneButton = document.getElementById('microphone-button');
-                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                recognition.lang = 'de-DE';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
+        // Funktion zum Vorlesen von Text mit Pause
+        function speakText(typeText, flavorText) {
+            window.speechSynthesis.cancel(); // Beendet alle laufenden Sprachsynthesevorgänge
 
-                microphoneButton.addEventListener('click', () => {
-                    recognition.start();
-                });
+            const typeUtterance = new SpeechSynthesisUtterance(typeText);
+            typeUtterance.lang = 'de-DE';
+            window.speechSynthesis.speak(typeUtterance);
 
-                recognition.addEventListener('result', (event) => {
-                    const spokenText = event.results[0][0].transcript;
-                    const pokemonName = Object.keys(pokemonData).find(name => name.toLowerCase() === spokenText.toLowerCase());
+            typeUtterance.onend = () => {
+                setTimeout(() => {
+                    const flavorUtterance = new SpeechSynthesisUtterance(flavorText);
+                    flavorUtterance.lang = 'de-DE';
+                    window.speechSynthesis.speak(flavorUtterance);
+                }, 500); // 0.5 Sekunden Pause
+            };
+        }
 
-                    if (pokemonName) {
-                        const pokemon = pokemonData[pokemonName];
+        // Sprachsuche-Funktionalität
+        const microphoneButton = document.getElementById('microphone-button');
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'de-DE';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
 
-                        // Setzen des Bildes und der Beschreibung im Detailbereich
-                        document.getElementById('pokemon-image').src = pokemon.image;
-                        document.getElementById('pokemon-description').textContent = pokemon.description;
+        microphoneButton.addEventListener('click', () => {
+            recognition.start();
+        });
 
-                        // Abspielen des Pokémon-Sounds
-                        const audio = new Audio(pokemon.sound);
-                        audio.play();
+        recognition.addEventListener('result', (event) => {
+            const spokenText = event.results[0][0].transcript;
+            const pokemonName = Object.keys(pokemonData).find(name => name.toLowerCase() === spokenText.toLowerCase());
 
-                        // Vorlesen der Pokémon-Beschreibung nach 2 Sekunden
-                        setTimeout(() => {
-                            currentSpeech = speakText(pokemon.description);
-                        }, 2000);
-                    } else {
-                        speakText('Pokémon nicht gefunden.');
-                    }
-                });
+            if (pokemonName) {
+                displayPokemonDetails(pokemonName);
+            } else {
+                speakText('Pokémon nicht gefunden.', '');
+            }
+        });
 
-                recognition.addEventListener('error', (event) => {
-                    speakText('Fehler bei der Spracherkennung.');
-                });
-            })
-            .catch(error => console.error('Fehler beim Laden der Pokémon-Daten:', error));
+        recognition.addEventListener('error', (event) => {
+            speakText('Fehler bei der Spracherkennung.', '');
+        });
+
+        // Initialisierung der Sidebar beim Laden der Seite
+        initializeSidebar().catch(error => console.error('Fehler beim Laden der Pokémon-Daten:', error));
     </script>
 </body>
 </html>
